@@ -21,7 +21,10 @@ if not os.path.exists(TOKENS_FILE):
         json.dump([], f)
 
 # =====================
-# Rutas
+# CONFIG DEL CARNET  🔴 AQUÍ ESTÁ EL ARREGLO
+# =====================
+CARNET_WIDTH = 2000
+CARNET_HEIGHT = 1200
 # =====================
 
 @app.route("/")
@@ -94,22 +97,26 @@ def generar():
         if not os.path.exists(plantilla_path):
             return "No existe la plantilla", 500
 
-        carnet = Image.open(plantilla_path).convert("RGBA")
+        # ========= 🔴 REDIMENSIONAR PLANTILLA =========
+        carnet = Image.open(plantilla_path).convert("RGB")
+        carnet = carnet.resize((CARNET_WIDTH, CARNET_HEIGHT))
         draw = ImageDraw.Draw(carnet)
+        # =============================================
 
         try:
-            font = ImageFont.truetype("arial.ttf", 48)
+            font = ImageFont.truetype("arial.ttf", 90)
         except:
             font = ImageFont.load_default()
 
         color = (20, 60, 20)
 
-        x = 350
-        y = 350
+        # Posiciones ajustadas al nuevo tamaño
+        x = 700
+        y = 450
 
         draw.text((x, y), f"Nombre: {nombre}", font=font, fill=color)
-        draw.text((x, y + 90), f"Documento: {documento}", font=font, fill=color)
-        draw.text((x, y + 180), f"Cargo: {cargo}", font=font, fill=color)
+        draw.text((x, y + 130), f"Documento: {documento}", font=font, fill=color)
+        draw.text((x, y + 260), f"Cargo: {cargo}", font=font, fill=color)
 
         nombre_archivo = f"carnet_{documento}.png"
         ruta = os.path.join(CARPETA_CARNETS, nombre_archivo)
@@ -123,5 +130,6 @@ def generar():
 @app.route("/carnet/<filename>")
 def carnet(filename):
     return send_from_directory(CARPETA_CARNETS, filename)
+
 
 
