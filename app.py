@@ -98,7 +98,7 @@ def generar():
         draw = ImageDraw.Draw(carnet)
 
         try:
-            font = ImageFont.truetype("arial.ttf", 48)
+            font = ImageFont.truetype("arial.ttf", 90)
         except:
             font = ImageFont.load_default()
 
