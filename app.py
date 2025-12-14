@@ -99,7 +99,7 @@ def generar():
 
         # FUENTE CON EL NUEVO TAMAÑO (CAMBIADO A 110)
         try:
-            font = ImageFont.truetype("arial.ttf", 1000)
+            font = ImageFont.truetype("arial.ttf", 1000000)
         except:
             font = ImageFont.load_default()
 
