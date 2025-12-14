@@ -7,32 +7,27 @@ import traceback
 
 app = Flask(__name__)
 
-# ================= CONFIG =================
+# =====================
+# Carpetas
+# =====================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 CARPETA_CARNETS = os.path.join(BASE_DIR, "static", "carnets")
 os.makedirs(CARPETA_CARNETS, exist_ok=True)
 
-PLANTILLA = os.path.join(BASE_DIR, "static", "fotos", "plantilla.jpg")
-
-# 🔑 Tokens
 TOKENS_FILE = os.path.join(BASE_DIR, "tokens.json")
 if not os.path.exists(TOKENS_FILE):
     with open(TOKENS_FILE, "w") as f:
         json.dump([], f)
 
-# Tamaño FINAL del carnet (CLAVE DEL ARREGLO)
-CARNET_WIDTH = 2000
-CARNET_HEIGHT = 1200
-# =========================================
-
+# =====================
+# Rutas
+# =====================
 
 @app.route("/")
-def index():
-    return "<h2>Usa el link único que te fue enviado.</h2>"
+def home():
+    return "<h2>Servidor funcionando. Usa el link que te fue enviado.</h2>"
 
-
-# 🔗 Crear link único
 @app.route("/crear_link")
 def crear_link():
     token = str(uuid.uuid4())
@@ -45,11 +40,10 @@ def crear_link():
     with open(TOKENS_FILE, "w") as f:
         json.dump(tokens, f, indent=4)
 
-    link = f"{request.host_url}form/{token}"
+    base_url = request.host_url
+    link = f"{base_url}form/{token}"
     return f"<h3>Link único:</h3><a href='{link}' target='_blank'>{link}</a>"
 
-
-# 📝 Mostrar formulario solo si el token es válido
 @app.route("/form/<token>")
 def form_token(token):
     with open(TOKENS_FILE, "r") as f:
@@ -65,8 +59,6 @@ def form_token(token):
 
     return render_template("index.html", token=token)
 
-
-# 🖨️ Generar carnet
 @app.route("/generar", methods=["POST"])
 def generar():
     try:
@@ -79,8 +71,11 @@ def generar():
 
         encontrado = next((t for t in tokens if t["token"] == token), None)
 
-        if encontrado is None or encontrado["usado"]:
-            return "Enlace inválido o ya usado", 403
+        if encontrado is None:
+            return "Token inválido", 403
+
+        if encontrado["usado"]:
+            return "Este enlace ya fue usado", 403
 
         # Marcar token como usado
         encontrado["usado"] = True
@@ -94,28 +89,30 @@ def generar():
         if not (nombre and documento and cargo):
             return "Faltan campos", 400
 
-        # ===== Abrir y REDIMENSIONAR plantilla =====
-        carnet = Image.open(PLANTILLA).convert("RGB")
-        carnet = carnet.resize((CARNET_WIDTH, CARNET_HEIGHT))
+        plantilla_path = os.path.join(BASE_DIR, "static", "fotos", "plantilla.jpg")
+
+        if not os.path.exists(plantilla_path):
+            return "No existe la plantilla", 500
+
+        carnet = Image.open(plantilla_path).convert("RGBA")
         draw = ImageDraw.Draw(carnet)
 
-        # ===== Fuente (Arial / default) =====
+        # FUENTE CON EL NUEVO TAMAÑO (CAMBIADO A 110)
         try:
-            font = ImageFont.truetype("arial.ttf", 90)
+            font = ImageFont.truetype("arial.ttf", 110)
         except:
             font = ImageFont.load_default()
 
-        color = (30, 60, 30)
+        color = (20, 60, 20)
 
-        # ===== Posiciones =====
-        x = 700
-        y = 450
+        # Ajusta las posiciones si es necesario
+        x = 350
+        y = 350
 
-        draw.text((x, y), f"Nombre: {nombre}", fill=color, font=font)
-        draw.text((x, y + 130), f"Documento: {documento}", fill=color, font=font)
-        draw.text((x, y + 260), f"Cargo: {cargo}", fill=color, font=font)
+        draw.text((x, y), f"Nombre: {nombre}", font=font, fill=color)
+        draw.text((x, y + 120), f"Documento: {documento}", font=font, fill=color)
+        draw.text((x, y + 240), f"Cargo: {cargo}", font=font, fill=color)
 
-        # Guardar carnet
         nombre_archivo = f"carnet_{documento}.png"
         ruta = os.path.join(CARPETA_CARNETS, nombre_archivo)
         carnet.save(ruta)
@@ -125,13 +122,9 @@ def generar():
     except Exception:
         return f"<pre>{traceback.format_exc()}</pre>"
 
-
 @app.route("/carnet/<filename>")
 def carnet(filename):
     return send_from_directory(CARPETA_CARNETS, filename)
 
-
-if __name__ == "__main__":
-    app.run(debug=True)
 
 
