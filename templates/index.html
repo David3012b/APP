@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generar Carnet</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #F3EFE6; 
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(0,0,0,0.15);
+            border: 3px solid #4A7C59; 
+        }
+
+        h1 {
+            text-align: center;
+            color: #2F4D32; 
+            margin-bottom: 10px;
+        }
+
+        /* LOGO */
+        .logo {
+            display: block;
+            width: 140px;
+            margin: 0 auto 20px auto;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #3C2814; 
+            font-size: 18px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 2px solid #C8BBA8;
+            font-size: 17px;
+            background: #FFFDF8;
+            transition: 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4A7C59;
+            box-shadow: 0 0 10px rgba(74, 124, 89, 0.3);
+            outline: none;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 14px 25px;
+            background: #4A7C59; 
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #355941; 
+            transform: scale(1.03);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+
+        <img src="/static/fotos/logo.jpg" alt="Logo" class="logo">
+
+        <h1>Generar Carnet</h1>
+
+        <form action="/generar" method="POST" enctype="multipart/form-data">
+
+            <input type="hidden" name="token" value="{{ token }}">
+
+            <label for="nombre">Nombre:</label>
+            <input type="text" name="nombre" id="nombre" required>
+
+            <label for="documento">ID:</label>
+            <input type="text" name="documento" id="documento" required>
+
+            <label for="cargo">Cargo:</label>
+            <input type="text" name="cargo" id="cargo" required>
+
+            <button type="submit">Generar Carnet</button>
+        </form>
+
+    </div>
+
+</body>
+</html>
