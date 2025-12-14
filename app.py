@@ -97,19 +97,21 @@ def generar():
         carnet = Image.open(plantilla_path).convert("RGBA")
         draw = ImageDraw.Draw(carnet)
 
+        # FUENTE CON EL NUEVO TAMAÑO (CAMBIADO A 110)
         try:
-            font = ImageFont.truetype("arial.ttf", 90)
+            font = ImageFont.truetype("arial.ttf", 110)
         except:
             font = ImageFont.load_default()
 
         color = (20, 60, 20)
 
+        # Ajusta las posiciones si es necesario
         x = 350
         y = 350
 
         draw.text((x, y), f"Nombre: {nombre}", font=font, fill=color)
-        draw.text((x, y + 90), f"Documento: {documento}", font=font, fill=color)
-        draw.text((x, y + 180), f"Cargo: {cargo}", font=font, fill=color)
+        draw.text((x, y + 120), f"Documento: {documento}", font=font, fill=color)
+        draw.text((x, y + 240), f"Cargo: {cargo}", font=font, fill=color)
 
         nombre_archivo = f"carnet_{documento}.png"
         ruta = os.path.join(CARPETA_CARNETS, nombre_archivo)
@@ -123,4 +125,3 @@ def generar():
 @app.route("/carnet/<filename>")
 def carnet(filename):
     return send_from_directory(CARPETA_CARNETS, filename)
-
