@@ -1,43 +1,61 @@
-from flask import Flask, send_from_directory
+from flask import Flask, render_template, request, send_file
 from PIL import Image, ImageDraw, ImageFont
 import os
 
 app = Flask(__name__)
 
+# ================= CONFIG =================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-PLANTILLA = os.path.join(BASE_DIR, "static", "plantilla.jpg")
-CARPETA_CARNETS = os.path.join(BASE_DIR, "static", "carnets")
-FONT_PATH = os.path.join(BASE_DIR, "fonts", "Montserrat-Regular.ttf")
+PLANTILLA = os.path.join(BASE_DIR, "static", "plantilla.png")
+FONT_PATH = os.path.join(BASE_DIR, "static", "Montserrat-Regular.ttf")
+OUTPUT_DIR = os.path.join(BASE_DIR, "static", "carnets")
 
-os.makedirs(CARPETA_CARNETS, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-@app.route("/generar/<nombre>/<documento>/<cargo>")
-def generar_carnet(nombre, documento, cargo):
-
-    img = Image.open(PLANTILLA).convert("RGB")
-    draw = ImageDraw.Draw(img)
-
-    # 🔥 FUENTES GRANDES (AQUÍ CAMBIAS TAMAÑO)
-    font_nombre = ImageFont.truetype(FONT_PATH, 120)
-    font_datos = ImageFont.truetype(FONT_PATH, 90)
-
-    color = (46, 77, 46)
-
-    # 📍 POSICIONES (AJUSTA SI QUIERES)
-    draw.text((600, 520), f"Nombre: {nombre}", fill=color, font=font_nombre)
-    draw.text((600, 660), f"Documento: {documento}", fill=color, font=font_datos)
-    draw.text((600, 780), f"Cargo: {cargo}", fill=color, font=font_datos)
-
-    nombre_archivo = f"{nombre}_{documento}.jpg"
-    ruta_salida = os.path.join(CARPETA_CARNETS, nombre_archivo)
-
-    img.save(ruta_salida, quality=95)
-
-    return send_from_directory(CARPETA_CARNETS, nombre_archivo)
+# Tamaño final del carnet (clave)
+CARNET_WIDTH = 2000
+CARNET_HEIGHT = 1200
+# ==========================================
 
 
-@app.route("/")
-def home():
-    return "Servidor activo"
+@app.route("/", methods=["GET", "POST"])
+def index():
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        documento = request.form["documento"]
+        cargo = request.form["cargo"]
+
+        # Abrir y REDIMENSIONAR plantilla
+        img = Image.open(PLANTILLA).convert("RGB")
+        img = img.resize((CARNET_WIDTH, CARNET_HEIGHT))
+
+        draw = ImageDraw.Draw(img)
+
+        # FUENTES (AHORA SÍ FUNCIONA)
+        font_nombre = ImageFont.truetype(FONT_PATH, 120)
+        font_datos = ImageFont.truetype(FONT_PATH, 85)
+
+        color = (40, 80, 45)
+
+        # Posiciones
+        x = 750
+        y = 450
+
+        draw.text((x, y), f"Nombre: {nombre}", fill=color, font=font_nombre)
+        draw.text((x, y + 170), f"Documento: {documento}", fill=color, font=font_datos)
+        draw.text((x, y + 290), f"Cargo: {cargo}", fill=color, font=font_datos)
+
+        # Guardar carnet
+        output_path = os.path.join(OUTPUT_DIR, f"{documento}.png")
+        img.save(output_path)
+
+        return send_file(output_path, as_attachment=True)
+
+    return render_template("index.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
 
